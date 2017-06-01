@@ -18,6 +18,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/server';
 import PrettyError from 'pretty-error';
 import App from './components/App';
+import httpProxy from 'http-proxy';
 import Html from './components/Html';
 import { ErrorPageWithoutStyle } from './routes/error/ErrorPage';
 import errorPageStyle from './routes/error/ErrorPage.css';
@@ -31,7 +32,17 @@ import configureStore from './store/configureStore';
 import { setRuntimeVariable } from './actions/runtime';
 import config from './config';
 
+const targetUrl = `${config.apiHost}`;
 const app = express();
+const proxy = httpProxy.createProxyServer({
+  target: targetUrl,
+  changeOrigin: true
+});
+
+//Configurate proxy connection
+app.use('/api', (req, res) => {
+  proxy.web(req, res, { target: targetUrl });
+});
 
 //
 // Tell any CSS tooling (such as Material UI) to use all vendor prefixes if the
